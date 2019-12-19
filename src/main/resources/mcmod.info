@@ -1,0 +1,11 @@
+[{
+  "modid": "oreget",
+  "name": "Ore-Get",
+  "description": "Manage Ore Plugins from your server",
+  "version": "1.0",
+  "url": "https://github.com/DosMike/OreGet",
+  "authorList": [ "DosMike" ],
+  "useDependencyInformation": "true",
+  "requiredMods": [ "spongeapi@[7.0.0,)" ],
+  "dependencies": [ "spongeapi@[7.0.0,)" ]
+}]
