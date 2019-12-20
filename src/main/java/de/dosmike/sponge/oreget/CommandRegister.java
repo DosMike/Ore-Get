@@ -158,6 +158,7 @@ public class CommandRegister {
                             if (!localData.isPresent()) {
                                 src.sendMessage(Text.of("Click ", Text.builder("here")
                                         .onClick(TextActions.runCommand("/oreget install "+pluginId))
+                                        .color(TextColors.AQUA)
                                         .build(), " to install"));
                             } else {
                                 if (localData.get().doDelete()) {
@@ -382,7 +383,7 @@ public class CommandRegister {
     }
 
     private static void printKV(CommandSource src, Object k, Object v) {
-        src.sendMessage(Text.of(TextColors.WHITE,k,": ",TextColors.RESET,v));
+        src.sendMessage(Text.of(TextColors.WHITE,k,": ",TextColors.GRAY,v));
     }
 
     static void register() {

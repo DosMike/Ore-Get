@@ -28,8 +28,6 @@ public abstract class PluginJob implements AbstractJob {
         }
         if (result.toDownload.isEmpty() && result.pluginsToRemove.isEmpty()) {
             JobManager.get().println(Text.of("Seems like everything's up to date."));
-            progress = 1f;
-            message = "Done";
             return;
         }
         progress = 0f;
@@ -92,7 +90,6 @@ public abstract class PluginJob implements AbstractJob {
             OreGet.getPluginCache().markForRemoval(entry, false);
         }
         JobManager.get().println(Text.of("DONE ", TextColors.RED, "To complete the installation, please restart the server"));
-        JobManager.get().printUpdate(100f, "DONE"); //display final note
     }
 
     abstract ResolveResult resolveProjects();

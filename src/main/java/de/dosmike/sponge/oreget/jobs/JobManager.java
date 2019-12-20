@@ -63,10 +63,7 @@ public class JobManager {
             float prog;
             String more;
             synchronized (jobMutex) {
-                if (watchdog.isDone()) {
-                    jobChannel.clearMembers();
-                    currentJob = null;
-                }
+                if (watchdog.isDone()) currentJob = null;
                 if (currentJob == null) return;
                 prog = currentJob.getProgress();
                 more = currentJob.getMessage();
@@ -104,15 +101,10 @@ public class JobManager {
         }
         if (more != null && !more.isEmpty())
             tb.append(Text.of(" ", more));
-        List<Text> extended = new LinkedList<>(chatTerminal);
         Text bottom = tb.build();
-        extended.add(bottom);
-        PaginationList list = PaginationList.builder().title(Text.of("OreGet Job"))
-                .contents(extended)
-                .padding(Text.of("="))
-                .linesPerPage(15)
-                .build();
-        list.sendTo(jobChannel.getMembers());
+        jobChannel.send(Text.of("===================== OreGet Job ====================="));
+        chatTerminal.forEach(text->jobChannel.send(text));
+        jobChannel.send(bottom);
         Sponge.getServer().getConsole().sendMessage(Text.of("OreJob ", bottom));
     }
 
@@ -121,7 +113,12 @@ public class JobManager {
             if (currentJob != null && !watchdog.isDone()) return false;
             jobChannel.clearMembers();
             currentJob = job;
-            watchdog = OreGet.async().submit(job);
+            watchdog = CompletableFuture.runAsync(job, OreGet.async())
+                    .thenAccept(ignore->{
+                        printUpdate(100f, "DONE"); //display final note
+                        jobChannel.clearMembers(); //kick all members
+                        clear(); //start "fresh" with next job
+                    });
             return true;
         }
     }
