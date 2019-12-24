@@ -1,6 +1,7 @@
 package de.dosmike.sponge.oreget.cache;
 
 import com.itwookie.inireader.INIConfig;
+import com.itwookie.inireader.INIUtils;
 import de.dosmike.sponge.oreget.OreGet;
 import de.dosmike.sponge.oreget.utils.ExitHandler;
 import org.spongepowered.api.Sponge;
@@ -47,12 +48,26 @@ public class PluginCache {
 
     public void scanLoaded() {
         Sponge.getPluginManager().getPlugins().forEach(pc->{
+            ProjectContainer cont = findProject(pc.getId()).orElseGet(()->new ProjectContainer(pc));
+
             boolean auto = false;
             if (!cacheInfo.hasKey("auto install", pc.getId()))
                 cacheInfo.set(pc.getId(), "false"); //we haven't seen this plugin before, assume manual install
-            else auto = "true".equals(cacheInfo.get(pc.getId()));
-            ProjectContainer cont = findProject(pc.getId()).orElseGet(()->new ProjectContainer(pc));
+            else
+                auto = "true".equals(cacheInfo.get(pc.getId()));
             cont.markAuto(auto);
+
+            if (cacheInfo.hasKey("hold version", pc.getId()))
+                cont.setVersionHold("true".equalsIgnoreCase(cacheInfo.get(pc.getId())));
+            if (cacheInfo.hasKey("forbidden versions", pc.getId())) {
+                String value = cacheInfo.get(pc.getId());
+                cont.getForbiddenVersions().clear();
+                if (value != null && !value.trim().isEmpty()) {
+                    for (String f : value.trim().split(" and "))
+                        cont.setForbiddenVersion(f.trim(), true);
+                }
+            }
+
             cache.add(cont);
         });
     }
@@ -79,16 +94,12 @@ public class PluginCache {
     }
 
     public void save() {
-        for (ProjectContainer cont : cache)
-            cacheInfo.set("auto install", cont.getPluginId(), cont.isAuto()?"true":"false");
+        for (ProjectContainer cont : cache) {
+            cacheInfo.set("auto install", cont.getPluginId(), cont.isAuto() ? "true" : "false");
+            cacheInfo.set("hold version", cont.getPluginId(), cont.doHoldVersion() ? "true" : "false");
+            cacheInfo.set("forbidden versions", cont.getPluginId(), String.join(" and ", cont.getForbiddenVersions()));
+        }
         cacheInfo.saveFile(cacheInfoFile);
-    }
-
-    public void clearDownloads() {
-        String[] listing = DIRECTORY.list((dir, name) -> name.toLowerCase().endsWith(".jar"));
-        if (listing != null)
-            for (String filename : listing)
-                new File(DIRECTORY, filename).delete(); // don't care about return here, just try to clean it up
     }
 
     public void notifyExitHandler() {

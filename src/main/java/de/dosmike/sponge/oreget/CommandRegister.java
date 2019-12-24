@@ -5,6 +5,9 @@ import de.dosmike.sponge.oreget.jobs.*;
 import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
+import de.dosmike.sponge.oreget.utils.version.Version;
+import de.dosmike.sponge.oreget.utils.version.VersionFilter;
+import de.dosmike.sponge.oreget.utils.version.VersionRange;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -17,6 +20,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.plugin.meta.PluginDependency;
 
 import java.net.MalformedURLException;
@@ -51,8 +55,11 @@ public class CommandRegister {
                                             .onClick(TextActions.runCommand("/oreget show " + project.getPluginId()))
                                             .build())
                                     .append(Text.of("/" + project.getName() + " "));
-                            if (project.getPromotedVersions().length > 0) {
-                                builder.append(Text.of(project.getPromotedVersions()[0].getVersion()));
+//                            if (project.getPromotedVersions().length > 0) {
+//                                builder.append(Text.of(project.getPromotedVersions()[0].getVersion()));
+                            Optional<OreVersion> promotedVersion = VersionFilter.getLatestStableVersion(project);
+                            if (promotedVersion.isPresent()) {
+                                builder.append(Text.of(promotedVersion.get().getName()));
                             } else {
                                 builder.append(Text.of("N/A"));
                             }
@@ -86,11 +93,13 @@ public class CommandRegister {
                         Optional<ProjectContainer> localData = OreGet.getPluginCache().findProject(pluginId);
                         Optional<OreProject> remoteData = OreGet.getOre().waitFor(()->OreGet.getOre().getProject(pluginId));
                         if (remoteData.isPresent()) {
-                            String pv = remoteData.get().getPromotedVersions().length>0?
-                                    remoteData.get().getPromotedVersions()[0].getVersion():"none";
+//                            String pv = remoteData.get().getPromotedVersions().length>0?
+//                                    remoteData.get().getPromotedVersions()[0].getVersion():"none";
                             Optional<OreVersion> versionData = Optional.empty();
-                            if (!pv.equals("none"))
-                                versionData = OreGet.getOre().waitFor(()->OreGet.getOre().getVersion(remoteData.get().getPluginId(), pv));
+//                            if (!pv.equals("none"))
+//                                versionData = OreGet.getOre().waitFor(()->OreGet.getOre().getVersion(remoteData.get().getPluginId(), pv));
+                                versionData = VersionFilter.getLatestStableVersion(remoteData.get());
+                            String pv = versionData.map(OreVersion::getName).orElse("N/A");
 
                             DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, src.getLocale());
                             printKV(src, "Plugin ID", remoteData.get().getPluginId());
@@ -116,6 +125,8 @@ public class CommandRegister {
                                     tb.append(Text.builder(dep.getPluginId())
                                             .onHover(TextActions.showText(Text.of("Version: " + dep.getVersion())))
                                             .onClick(TextActions.runCommand("/oreget show " + dep.getPluginId()))
+                                            .color(TextColors.AQUA)
+                                            .style(TextStyles.UNDERLINE)
                                             .build());
                                 }
                                 printKV(src, "  Dependencies", tb.build());
@@ -136,6 +147,8 @@ public class CommandRegister {
                                         tb.append(Text.builder(dep.getId())
                                                 .onHover(TextActions.showText(Text.of("Version: " + dep.getVersion())))
                                                 .onClick(TextActions.runCommand("/oreget show " + dep.getId()))
+                                                .color(TextColors.AQUA)
+                                                .style(TextStyles.UNDERLINE)
                                                 .build());
                                     }
                                     printKV(src, "  Dependencies", tb.build());
@@ -159,19 +172,28 @@ public class CommandRegister {
                                 src.sendMessage(Text.of("Click ", Text.builder("here")
                                         .onClick(TextActions.runCommand("/oreget install "+pluginId))
                                         .color(TextColors.AQUA)
+                                        .style(TextStyles.UNDERLINE)
                                         .build(), " to install"));
                             } else {
+                                boolean canUpdate = false;
+                                if (!pv.equalsIgnoreCase("N/A")) //if we have a promoted version
+                                    try {
+                                        canUpdate = new Version(pv).compareTo(new Version(localData.get().getInstalledVersion().orElse("N/A"))) > 0;
+                                    } catch (IllegalArgumentException e) { //some version is not a mave-like version
+                                        //do string comparison
+                                        canUpdate = !pv.equalsIgnoreCase(localData.get().getInstalledVersion().orElse("N/A"));
+                                    }
                                 if (localData.get().doDelete()) {
                                     src.sendMessage(Text.of(TextColors.YELLOW, "Requires Restart to remove"));
                                 } else if (!localData.get().getInstalledVersion().isPresent()) {
                                     src.sendMessage(Text.of(TextColors.YELLOW, "Requires Restart to load"));
                                 } else if (localData.get().getCachedVersion().isPresent()) {
                                     src.sendMessage(Text.of(TextColors.YELLOW, "Requires Restart to update"));
-                                } else if (!pv.equalsIgnoreCase(localData.get().getInstalledVersion().orElse("N/A"))) {
+                                } else if (canUpdate) {
                                     src.sendMessage(Text.of(TextColors.GREEN, "Looks like this plugin can be upgraded!"));
                                 }
                             }
-                        } else if (localData.isPresent()) {
+                        } else if (localData.isPresent()) { //only local data is available
                             Optional<PluginContainer> spongeData = localData.get().getPluginContainer();
                             printKV(src, "Plugin ID", localData.get().getPluginId());
                             spongeData.ifPresent(pluginContainer -> printKV(src, "Name", pluginContainer.getName()));
@@ -298,22 +320,13 @@ public class CommandRegister {
                 .description(Text.of("Uninstall all dependencies that are no longer necessary"))
                 .arguments(GenericArguments.none())
                 .executor((src, args) -> {
-                    Set<ProjectContainer> stubbed = new HashSet<>();
-                    for (ProjectContainer container : OreGet.getPluginCache().getProjects()) {
-                        if (OreGet.getPluginCache().isStubbed(container))
-                            stubbed.add(container);
-                    }
-                    if (stubbed.size()>0) {
-                        stubbed.forEach(project -> OreGet.getPluginCache().markForRemoval(project, false));
-                        src.sendMessage(Text.of("Found ", stubbed.size(), " stubbed plugins: ", stubbed.stream()
-                                .map(ProjectContainer::getPluginId)
-                                .collect(Collectors.joining(", "))
-                        ));
-                        src.sendMessage(Text.of(TextColors.RED, "The plugins will be removed with the next /stop"));
+                    if (!JobManager.get().runJob(new AutoRemoveJob())) {
+                        JobManager.get().notifyMessageReceiverAdd(src);
+                        throw new CommandException(Text.of(TextColors.RED, "There's currently another task running:"));
                     } else {
-                        src.sendMessage(Text.of("Could not find any stubbed dependencies"));
+                        JobManager.get().notifyMessageReceiverAdd(src);
+                        return CommandResult.success();
                     }
-                    return CommandResult.success();
                 })
                 .build();
     }

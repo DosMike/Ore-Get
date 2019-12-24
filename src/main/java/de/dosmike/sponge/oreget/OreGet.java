@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
-@Plugin(id = "oreget", name = "Ore-Get", version = "1.0")
+@Plugin(id = "oreget", name = "Ore-Get", version = "1.0.1")
 public class OreGet {
 
     public static void main(String[] args) {

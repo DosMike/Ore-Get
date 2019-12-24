@@ -25,7 +25,7 @@ public class VersionFilter {
                 return VersionRange.parseString(range).test(version);
             }
         }
-        return true;
+        return false; // No plugin version specifies a sponge version or is within the requires sponge version
     }
     static boolean testProjectStable(OreTag[] tags) {
         for (OreTag tag : tags) {

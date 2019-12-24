@@ -1,6 +1,5 @@
 package de.dosmike.sponge.oreget.cache;
 
-import de.dosmike.sponge.oreget.OreGet;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
 import org.spongepowered.api.Sponge;
@@ -18,6 +17,8 @@ public class ProjectContainer {
     private boolean isAuto=false; //installed as dependency, not by user
     private boolean delete=false; //marked for removal
     private boolean purge=false; //remove configs as well
+    private boolean holdVersion = false; //ignore when updating
+    private Set<String> forbiddenVersions = new HashSet<>(); //if plugin would update to one of these versions, ignore
 
     public ProjectContainer(String pluginId) {
         this.pluginId = pluginId;
@@ -114,4 +115,23 @@ public class ProjectContainer {
     public int hashCode() {
         return Objects.hash(pluginId);
     }
+
+    public void setVersionHold(boolean holdVersion) {
+        this.holdVersion = holdVersion;
+    }
+    public boolean doHoldVersion() {
+        return holdVersion;
+    }
+    /** @return true if the set of forbidden versions changed trough this command */
+    public boolean setForbiddenVersion(String version, boolean forbidden) {
+        if (forbidden) return forbiddenVersions.add(version);
+        else return forbiddenVersions.remove(version);
+    }
+    public boolean isVersionForbidden(String version) {
+        return forbiddenVersions.contains(version);
+    }
+    public Set<String> getForbiddenVersions() {
+        return forbiddenVersions;
+    }
+
 }

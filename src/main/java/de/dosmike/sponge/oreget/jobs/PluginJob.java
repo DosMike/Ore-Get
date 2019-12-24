@@ -65,15 +65,14 @@ public abstract class PluginJob implements AbstractJob {
             while (!pdl.isDone()) { //print progress every 10% or 1 second
                 if (System.currentTimeMillis()-previous > 1000) {
                     previous = System.currentTimeMillis();
-                    JobManager.get().println(Text.of("Downloading ",entry.getKey().getName(), "... ", (int)(pdl.getProgress()*100), "%"));
+                    JobManager.get().println(Text.of(TextColors.GRAY, "Downloading ", TextColors.WHITE, entry.getKey().getName(), ": ", entry.getValue().getName(), TextColors.GRAY,"... ", (int)(pdl.getProgress()*100), "%"));
                 }
                 progress = i/j + pdl.getProgress()*progressPerPlugin;
                 Thread.yield();
             }
-            JobManager.get().println(Text.of("Downloading ",entry.getKey().getName(), "... 100%"));
+            JobManager.get().println(Text.of(TextColors.GRAY, "Downloading ", TextColors.WHITE, entry.getKey().getName(), ": ", entry.getValue().getName(), TextColors.GRAY,"... 100%"));
             if (!pdl.target().isPresent()) {
                 JobManager.get().println(Text.of(TextColors.RED, "Could not download plugin "+entry.getKey().getName()+" - Job cancelled!"));
-                OreGet.getPluginCache().clearDownloads();
                 return;
             }
             ProjectContainer container = OreGet.getPluginCache().findProject(entry.getKey().getPluginId()).orElseGet(()->{
