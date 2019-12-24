@@ -1,7 +1,6 @@
 package de.dosmike.sponge.oreget.cache;
 
 import com.itwookie.inireader.INIConfig;
-import com.itwookie.inireader.INIUtils;
 import de.dosmike.sponge.oreget.OreGet;
 import de.dosmike.sponge.oreget.utils.ExitHandler;
 import org.spongepowered.api.Sponge;

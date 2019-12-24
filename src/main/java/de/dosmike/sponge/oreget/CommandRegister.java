@@ -7,7 +7,6 @@ import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
 import de.dosmike.sponge.oreget.utils.version.Version;
 import de.dosmike.sponge.oreget.utils.version.VersionFilter;
-import de.dosmike.sponge.oreget.utils.version.VersionRange;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;

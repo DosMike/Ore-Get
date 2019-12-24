@@ -7,15 +7,14 @@ import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreReviewState;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
+import de.dosmike.sponge.oreget.utils.version.Version;
 import de.dosmike.sponge.oreget.utils.version.VersionFilter;
-import de.dosmike.sponge.oreget.utils.version.VersionRange;
 import org.spongepowered.api.text.Text;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class UpgradeJob extends PluginJob {
@@ -67,13 +66,19 @@ public class UpgradeJob extends PluginJob {
                                 pluginsOnOre.add(project.getPluginId());
                                 if (project.isInstalled()) {
                                     //requires update?
-                                    Predicate<String> versionTest = VersionRange.parseString(version.getName());
                                     ProjectContainer installedData = OreGet.getPluginCache().findProject(project.getPluginId()).get();
-                                    boolean promotedVersionInstalled =
-                                                    versionTest.test(installedData.getCachedVersion().orElse("N/A")) ||
-                                                    versionTest.test(installedData.getInstalledVersion().orElse("N/A"));
-
-                                    if (!promotedVersionInstalled) {
+                                    boolean canUpdate = false;
+                                    String localVersion = installedData.getCachedVersion().isPresent() ? installedData.getCachedVersion().get() :
+                                                        ( installedData.getInstalledVersion().isPresent() ? installedData.getInstalledVersion().get() :
+                                                          "N/A" );
+                                    String promotedVersion = version.getName();
+                                    try {
+                                        canUpdate = new Version(promotedVersion).compareTo(new Version(localVersion)) > 0;
+                                    } catch (IllegalArgumentException e) { //some version is not a mave-like version
+                                        //do string comparison
+                                        canUpdate = !promotedVersion.equalsIgnoreCase(localVersion);
+                                    }
+                                    if (canUpdate) {
                                         resolveResult.pluginsToUpdate.add(project.getPluginId());
                                         resolveResult.toDownload.put(project, version);
                                         if (!version.getReviewState().equals(OreReviewState.REVIEWED)) {

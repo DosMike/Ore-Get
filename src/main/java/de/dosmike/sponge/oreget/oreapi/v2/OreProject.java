@@ -6,8 +6,6 @@ import de.dosmike.sponge.oreget.oreapi.OreApiV2;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
 import org.spongepowered.api.Sponge;
 
-import java.text.ParseException;
-
 /** does not parse URLs to prevent Malformed URL Exceptions */
 public class OreProject {
 

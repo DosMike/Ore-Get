@@ -1,9 +1,7 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
-import de.dosmike.sponge.oreget.utils.CachingCollection;
 
 import java.util.*;
 

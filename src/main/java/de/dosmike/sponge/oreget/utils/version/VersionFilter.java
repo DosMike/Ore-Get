@@ -4,12 +4,8 @@ import de.dosmike.sponge.oreget.OreGet;
 import de.dosmike.sponge.oreget.oreapi.v2.*;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.world.gen.populator.Ore;
 
-import java.util.Arrays;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class VersionFilter {
 
