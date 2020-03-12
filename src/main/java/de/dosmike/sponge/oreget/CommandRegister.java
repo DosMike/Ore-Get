@@ -3,6 +3,7 @@ package de.dosmike.sponge.oreget;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
 import de.dosmike.sponge.oreget.jobs.*;
 import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
+import de.dosmike.sponge.oreget.oreapi.v2.OrePartialVersion;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
 import de.dosmike.sponge.oreget.utils.version.Version;
@@ -54,11 +55,9 @@ public class CommandRegister {
                                             .onClick(TextActions.runCommand("/oreget show " + project.getPluginId()))
                                             .build())
                                     .append(Text.of("/" + project.getName() + " "));
-//                            if (project.getPromotedVersions().length > 0) {
-//                                builder.append(Text.of(project.getPromotedVersions()[0].getVersion()));
-                            Optional<OreVersion> promotedVersion = VersionFilter.getLatestStableVersion(project);
+                            Optional<OrePartialVersion> promotedVersion = VersionFilter.getLatestPromotedVersionPartial(project);
                             if (promotedVersion.isPresent()) {
-                                builder.append(Text.of(promotedVersion.get().getName()));
+                                builder.append(Text.of(promotedVersion.get().getVersion()));
                             } else {
                                 builder.append(Text.of("N/A"));
                             }
@@ -92,12 +91,7 @@ public class CommandRegister {
                         Optional<ProjectContainer> localData = OreGet.getPluginCache().findProject(pluginId);
                         Optional<OreProject> remoteData = OreGet.getOre().waitFor(()->OreGet.getOre().getProject(pluginId));
                         if (remoteData.isPresent()) {
-//                            String pv = remoteData.get().getPromotedVersions().length>0?
-//                                    remoteData.get().getPromotedVersions()[0].getVersion():"none";
-                            Optional<OreVersion> versionData = Optional.empty();
-//                            if (!pv.equals("none"))
-//                                versionData = OreGet.getOre().waitFor(()->OreGet.getOre().getVersion(remoteData.get().getPluginId(), pv));
-                                versionData = VersionFilter.getLatestStableVersion(remoteData.get());
+                            Optional<OreVersion> versionData = VersionFilter.getLatestPromotedVersion(remoteData.get());
                             String pv = versionData.map(OreVersion::getName).orElse("N/A");
 
                             DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, src.getLocale());

@@ -61,7 +61,7 @@ public class UpgradeJob extends PluginJob {
             int i = 0;
             for (OreProject project : remoteProjects) {
                 if (project.getPromotedVersions().length > 0) {
-                    VersionFilter.getLatestStableVersion(project)
+                    VersionFilter.getLatestPromotedVersion(project)
                             .ifPresent(version -> {
                                 pluginsOnOre.add(project.getPluginId());
                                 if (project.isInstalled()) {
