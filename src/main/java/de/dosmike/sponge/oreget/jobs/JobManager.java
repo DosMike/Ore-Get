@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.entity.living.player.Player;
@@ -56,7 +56,7 @@ public class JobManager {
     private JobManager() {
         chatTerminal = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) chatTerminal.add(Text.EMPTY);
-        OreGet.async().scheduleAtFixedRate(()->{
+        OreGetPlugin.async().scheduleAtFixedRate(()->{
             float prog;
             String more;
             synchronized (jobMutex) {
@@ -110,7 +110,7 @@ public class JobManager {
             if (currentJob != null && !watchdog.isDone()) return false;
             jobChannel.clearMembers();
             currentJob = job;
-            watchdog = CompletableFuture.runAsync(job, OreGet.async())
+            watchdog = CompletableFuture.runAsync(job, OreGetPlugin.async())
                     .thenAccept(ignore->{
                         printUpdate(100f, "DONE"); //display final note
                         jobChannel.clearMembers(); //kick all members

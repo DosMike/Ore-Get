@@ -1,6 +1,8 @@
 package de.dosmike.sponge.oreget;
 
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
+import de.dosmike.sponge.oreget.decoupler.IDependency;
+import de.dosmike.sponge.oreget.decoupler.IPlugin;
 import de.dosmike.sponge.oreget.jobs.*;
 import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
@@ -13,14 +15,12 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
-import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
-import org.spongepowered.plugin.meta.PluginDependency;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,8 +37,8 @@ public class CommandRegister {
                 .arguments(GenericArguments.remainingJoinedStrings(Text.of("query")))
                 .executor((src, args) -> {
                     String query = args.<String>getOne("query").get();
-                    OreGet.async().execute(()->{ // Do networking async
-                        List<OreProject> projects = OreGet.getOre().waitFor(()->OreGet.getOre().projectSearch(query, null))
+                    OreGetPlugin.async().execute(()->{ // Do networking async
+                        List<OreProject> projects = OreGetPlugin.getOre().waitFor(()-> OreGetPlugin.getOre().projectSearch(query, null))
                                 .map(oreProjectOreResultList -> Arrays.asList(oreProjectOreResultList.getResult()))
                                 .orElseGet(LinkedList::new);
                         if (projects.isEmpty()) {
@@ -88,9 +88,9 @@ public class CommandRegister {
                 .arguments(GenericArguments.string(Text.of("pluginId")))
                 .executor((src, args) -> {
                     String pluginId = args.<String>getOne("pluginId").get();
-                    OreGet.async().execute(()->{ //Do networking async
-                        Optional<ProjectContainer> localData = OreGet.getPluginCache().findProject(pluginId);
-                        Optional<OreProject> remoteData = OreGet.getOre().waitFor(()->OreGet.getOre().getProject(pluginId));
+                    OreGetPlugin.async().execute(()->{ //Do networking async
+                        Optional<ProjectContainer> localData = OreGetPlugin.getPluginCache().findProject(pluginId);
+                        Optional<OreProject> remoteData = OreGetPlugin.getOre().waitFor(()-> OreGetPlugin.getOre().getProject(pluginId));
                         if (remoteData.isPresent()) {
 //                            String pv = remoteData.get().getPromotedVersions().length>0?
 //                                    remoteData.get().getPromotedVersions()[0].getVersion():"none";
@@ -137,10 +137,10 @@ public class CommandRegister {
                             }
                             if (localData.isPresent()) {
                                 printKV(src, "Installed Version", localData.get().getInstalledVersion().orElse("Not Active"));
-                                Optional<PluginContainer> spongeData = localData.get().getPluginContainer();
+                                Optional<IPlugin> spongeData = localData.get().getPlugin();
                                 if (spongeData.isPresent()) {
                                     Text.Builder tb = Text.builder(); boolean first = true;
-                                    for (PluginDependency dep : spongeData.get().getDependencies()) {
+                                    for (IDependency dep : spongeData.get().getDependencies()) {
                                         if (first) first = false;
                                         else tb.append(Text.of(", "));
                                         tb.append(Text.builder(dep.getId())
@@ -193,13 +193,13 @@ public class CommandRegister {
                                 }
                             }
                         } else if (localData.isPresent()) { //only local data is available
-                            Optional<PluginContainer> spongeData = localData.get().getPluginContainer();
+                            Optional<IPlugin> spongeData = localData.get().getPlugin();
                             printKV(src, "Plugin ID", localData.get().getPluginId());
                             spongeData.ifPresent(pluginContainer -> printKV(src, "Name", pluginContainer.getName()));
                             printKV(src, "Installed Version", localData.get().getInstalledVersion().orElse("Not Active"));
                             if (spongeData.isPresent()) {
                                 Text.Builder tb = Text.builder(); boolean first = true;
-                                for (PluginDependency dep : spongeData.get().getDependencies()) {
+                                for (IDependency dep : spongeData.get().getDependencies()) {
                                     if (first) first = false;
                                     else tb.append(Text.of(", "));
                                     tb.append(Text.builder(dep.getId())
@@ -213,7 +213,7 @@ public class CommandRegister {
                             printKV(src, "Downloaded Version", localData.get().getCachedVersion().orElse("No Update"));
                             printKV(src, "Manual install", localData.get().isAuto()?"no":"yes");
                             printKV(src, "Remove on /stop", localData.get().doDelete()?(localData.get().doPurge()?"all":"jar-file"):"no");
-                            printKV(src, "Description", spongeData.flatMap(PluginContainer::getDescription).orElse("empty"));
+                            printKV(src, "Description", spongeData.flatMap(IPlugin::getDescription).orElse("empty"));
                         } else {
                             src.sendMessage(Text.of(TextColors.RED, "This plugin does not seem to exist"));
                         }
@@ -337,7 +337,7 @@ public class CommandRegister {
                 .arguments(GenericArguments.string(Text.of("pluginId")))
                 .executor((src, args) -> {
                     String pluginId = args.<String>getOne("pluginId").get();
-                    Optional<ProjectContainer> project = OreGet.getPluginCache().findProject(pluginId);
+                    Optional<ProjectContainer> project = OreGetPlugin.getPluginCache().findProject(pluginId);
                     if (project.isPresent() && project.get().getInstalledVersion().isPresent() || project.get().getCachedVersion().isPresent()) {
                         project.get().markAuto(true);
                         src.sendMessage(Text.of("The plugin is now marked as auto installed dependency"));
@@ -355,7 +355,7 @@ public class CommandRegister {
                 .arguments(GenericArguments.string(Text.of("pluginId")))
                 .executor((src, args) -> {
                     String pluginId = args.<String>getOne("pluginId").get();
-                    Optional<ProjectContainer> project = OreGet.getPluginCache().findProject(pluginId);
+                    Optional<ProjectContainer> project = OreGetPlugin.getPluginCache().findProject(pluginId);
                     if (project.isPresent() && project.get().getInstalledVersion().isPresent() || project.get().getCachedVersion().isPresent()) {
                         project.get().markAuto(false);
                         src.sendMessage(Text.of("The plugin is now marked as manually installed"));
@@ -399,7 +399,7 @@ public class CommandRegister {
     }
 
     static void register() {
-        Sponge.getGame().getCommandManager().register(OreGet.getInstance(), CommandSpec.builder()
+        Sponge.getGame().getCommandManager().register(OreGetPlugin.getInstance(), CommandSpec.builder()
                 .permission(PermissionRegister.CMD_ORE.getId())
                 .child(subcmdSearch(), "search")
                 .child(subcmdShow(), "show")

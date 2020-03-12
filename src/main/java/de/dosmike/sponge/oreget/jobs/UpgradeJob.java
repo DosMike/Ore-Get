@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
 import de.dosmike.sponge.oreget.oreapi.RateLimiter;
 import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 public class UpgradeJob extends PluginJob {
 
     public UpgradeJob(boolean autoremove) {
-        OreGet.getPluginCache().getProjects().forEach(project->{
+        OreGetPlugin.getPluginCache().getProjects().forEach(project->{
             if (project.isAuto()) {
                 manual.add(project.getPluginId());
-            } else if (!OreGet.getPluginCache().isStubbed(project))
+            } else if (!OreGetPlugin.getPluginCache().isStubbed(project))
                 pluginsToCheck.add(project.getPluginId());
         });
         removeStubbed = autoremove;
@@ -49,7 +49,7 @@ public class UpgradeJob extends PluginJob {
             setMessage("Fetching Projects");
             //fetch all required projects from ore
             Set<OreProject> remoteProjects = RateLimiter.waitForAll( pluginsToCheck.stream()
-                    .map(missing -> OreGet.getOre().getRateLimiter().enqueue(() -> OreGet.getOre().getProject(missing)))
+                    .map(missing -> OreGetPlugin.getOre().getRateLimiter().enqueue(() -> OreGetPlugin.getOre().getProject(missing)))
                     .collect(Collectors.toSet()))
                     .stream()
                     .filter(Optional::isPresent)
@@ -66,7 +66,7 @@ public class UpgradeJob extends PluginJob {
                                 pluginsOnOre.add(project.getPluginId());
                                 if (project.isInstalled()) {
                                     //requires update?
-                                    ProjectContainer installedData = OreGet.getPluginCache().findProject(project.getPluginId()).get();
+                                    ProjectContainer installedData = OreGetPlugin.getPluginCache().findProject(project.getPluginId()).get();
                                     boolean canUpdate = false;
                                     String localVersion = installedData.getCachedVersion().isPresent() ? installedData.getCachedVersion().get() :
                                                         ( installedData.getInstalledVersion().isPresent() ? installedData.getInstalledVersion().get() :
@@ -132,7 +132,7 @@ public class UpgradeJob extends PluginJob {
 
         //collect plugins that can be removed
         if (removeStubbed) {
-            resolveResult.pluginsToRemove.addAll(OreGet.getPluginCache().getProjects().stream()
+            resolveResult.pluginsToRemove.addAll(OreGetPlugin.getPluginCache().getProjects().stream()
                     .filter(container->!container.doDelete() && container.isAuto()) //collect all installed plugin ids, that were not installed manually
                     .map(ProjectContainer::getPluginId)
                     .filter(id->!squishedDependencies.contains(id)) //from all auto plugins remove current dependencies; remain with stubbed ones

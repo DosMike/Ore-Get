@@ -1,10 +1,10 @@
 package de.dosmike.sponge.oreget.cache;
 
 import com.itwookie.inireader.INIConfig;
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
+import de.dosmike.sponge.oreget.decoupler.AbstractionProvider;
+import de.dosmike.sponge.oreget.decoupler.IPlugin;
 import de.dosmike.sponge.oreget.utils.ExitHandler;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.plugin.PluginContainer;
 
 import java.io.File;
 import java.util.Collection;
@@ -46,7 +46,7 @@ public class PluginCache {
     }
 
     public void scanLoaded() {
-        Sponge.getPluginManager().getPlugins().forEach(pc->{
+        AbstractionProvider.get().getPlugins().forEach(pc->{
             ProjectContainer cont = findProject(pc.getId()).orElseGet(()->new ProjectContainer(pc));
 
             boolean auto = false;
@@ -103,10 +103,10 @@ public class PluginCache {
 
     public void notifyExitHandler() {
         for (ProjectContainer container : cache) {
-            Optional<PluginContainer> spongeData = container.getPluginContainer();
+            Optional<IPlugin> spongeData = container.getPlugin();
             if (container.doDelete() && container.getInstalledVersion().isPresent()) {
                 spongeData
-                        .flatMap(PluginContainer::getSource)
+                        .flatMap(IPlugin::getSource)
                         .ifPresent(p->ExitHandler.deleteOnExit(p.toFile()));
             }
             if (container.doPurge() && container.getInstalledVersion().isPresent()) {
@@ -118,11 +118,11 @@ public class PluginCache {
                 //we can install / update
                 if (container.getInstalledVersion().isPresent()) {
                     //update, remove old version
-                    container.getPluginContainer()
-                            .flatMap(PluginContainer::getSource)
+                    container.getPlugin()
+                            .flatMap(IPlugin::getSource)
                             .ifPresent(p->ExitHandler.deleteOnExit(p.toFile()));
                 }
-                ExitHandler.moveOnExit(new File(DIRECTORY, container.getCachedFilename()), OreGet.getInstance().getPluginDirectory().resolve(container.getCachedFilename()).toFile());
+                ExitHandler.moveOnExit(new File(DIRECTORY, container.getCachedFilename()), OreGetPlugin.getInstance().getPluginDirectory().resolve(container.getCachedFilename()).toFile());
             }
         }
     }

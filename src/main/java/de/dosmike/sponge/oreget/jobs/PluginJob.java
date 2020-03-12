@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
@@ -75,18 +75,18 @@ public abstract class PluginJob implements AbstractJob {
                 JobManager.get().println(Text.of(TextColors.RED, "Could not download plugin "+entry.getKey().getName()+" - Job cancelled!"));
                 return;
             }
-            ProjectContainer container = OreGet.getPluginCache().findProject(entry.getKey().getPluginId()).orElseGet(()->{
+            ProjectContainer container = OreGetPlugin.getPluginCache().findProject(entry.getKey().getPluginId()).orElseGet(()->{
                 ProjectContainer newContainer = new ProjectContainer(entry.getKey().getPluginId().toLowerCase());
                 newContainer.markAuto(!result.pluginsRequestedManually.contains(entry.getKey().getPluginId())); //if it's not the requested, mark auto
                 return newContainer;
             });
             container.load(entry.getKey(), entry.getValue(), pdl.target().get().getName());
-            OreGet.getPluginCache().registerPlugin(container);
+            OreGetPlugin.getPluginCache().registerPlugin(container);
             i++;
         }
         //remove plugins
         for (String entry : result.pluginsToRemove) {
-            OreGet.getPluginCache().markForRemoval(entry, false);
+            OreGetPlugin.getPluginCache().markForRemoval(entry, false);
         }
         JobManager.get().println(Text.of("DONE ", TextColors.RED, "To complete the installation, please restart the server"));
     }

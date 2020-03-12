@@ -1,9 +1,9 @@
 package de.dosmike.sponge.oreget.cache;
 
+import de.dosmike.sponge.oreget.decoupler.AbstractionProvider;
+import de.dosmike.sponge.oreget.decoupler.IPlugin;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.*;
 
@@ -23,7 +23,7 @@ public class ProjectContainer {
     public ProjectContainer(String pluginId) {
         this.pluginId = pluginId;
     }
-    public ProjectContainer(PluginContainer container) {
+    public ProjectContainer(IPlugin container) {
         load(container);
     }
     /** after download, this is the information we have */
@@ -31,7 +31,7 @@ public class ProjectContainer {
         load(project, version, filename);
     }
 
-    public void load(PluginContainer container) {
+    public void load(IPlugin container) {
         pluginId = container.getId();
         currentVersion = container.getVersion().orElse("N/A");
         currentDependencies.clear();
@@ -87,8 +87,8 @@ public class ProjectContainer {
         return cachedFilename;
     }
 
-    public Optional<PluginContainer> getPluginContainer() {
-        return Sponge.getPluginManager().getPlugin(getPluginId());
+    public Optional<IPlugin> getPlugin() {
+        return AbstractionProvider.get().getPlugin(getPluginId());
     }
 
     /** get all projects that directly depend on this project within the supplied list */

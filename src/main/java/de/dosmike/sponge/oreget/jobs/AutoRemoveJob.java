@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -25,15 +25,15 @@ public class AutoRemoveJob implements AbstractJob {
     @Override
     public void run() {
         Set<ProjectContainer> stubbed = new HashSet<>();
-        int i = 0; int amount = OreGet.getPluginCache().getProjects().size();
-        for (ProjectContainer container : OreGet.getPluginCache().getProjects()) {
-            if (OreGet.getPluginCache().isStubbed(container))
+        int i = 0; int amount = OreGetPlugin.getPluginCache().getProjects().size();
+        for (ProjectContainer container : OreGetPlugin.getPluginCache().getProjects()) {
+            if (OreGetPlugin.getPluginCache().isStubbed(container))
                 stubbed.add(container);
             i++;
             progress = (float)i/amount;
         }
         if (stubbed.size()>0) {
-            stubbed.forEach(project -> OreGet.getPluginCache().markForRemoval(project, false));
+            stubbed.forEach(project -> OreGetPlugin.getPluginCache().markForRemoval(project, false));
             JobManager.get().println(Text.of(TextColors.YELLOW, "Found ", stubbed.size(), " stubbed plugins:"));
             JobManager.get().println(Text.of(
                     stubbed.stream()

@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -35,13 +35,13 @@ public class RemoveJob implements AbstractJob {
         Set<String> invalid = new TreeSet<>(String::compareToIgnoreCase);
         int i = 0;
         for (String id : manual) {
-            Optional<ProjectContainer> project = OreGet.getPluginCache().findProject(id);
+            Optional<ProjectContainer> project = OreGetPlugin.getPluginCache().findProject(id);
             if (project.isPresent() && project.get().getInstalledVersion().isPresent() || project.get().getCachedVersion().isPresent()) {
                 if (project.get().doDelete()) {
-                    OreGet.getPluginCache().registerPlugin(project.get());
+                    OreGetPlugin.getPluginCache().registerPlugin(project.get());
                     restore.add(id);
                 } else {
-                    OreGet.getPluginCache().markForRemoval(project.get(), doPurge);
+                    OreGetPlugin.getPluginCache().markForRemoval(project.get(), doPurge);
                     remove.add(id);
                 }
             } else {

@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.oreapi;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.oreapi.limiter.BucketLimiter;
 import de.dosmike.sponge.oreget.oreapi.limiter.Limiter;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +62,7 @@ public class RateLimiter extends Thread {
                 limit.waitForNext();
             }
         }
-        OreGet.l("Rate Limiter terminated");
+        OreGetPlugin.l("Rate Limiter terminated");
     }
 
     public <T> Future<T> enqueue(Supplier<T> task) {
@@ -126,7 +126,7 @@ public class RateLimiter extends Thread {
      * This method is supposed to make code more readable by removing the need for try{} */
     public <T> Optional<T> waitFor(Supplier<T> task) {
         try {
-            return Optional.of(enqueue(task).get());
+            return Optional.ofNullable(enqueue(task).get());
         } catch (InterruptedException | ExecutionException ignore) { }
         return Optional.empty();
     }

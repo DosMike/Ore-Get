@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
 import de.dosmike.sponge.oreget.oreapi.RateLimiter;
 import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
@@ -23,7 +23,7 @@ public class InstallJob extends PluginJob {
         manual.addAll(Arrays.asList(pluginIds));
         if (updateOnly) {
             for (String pluginId : pluginIds)
-                if (OreGet.getPluginCache().findProject(pluginId).isPresent())
+                if (OreGetPlugin.getPluginCache().findProject(pluginId).isPresent())
                     pluginsToCheck.add(pluginId);
         } else
             pluginsToCheck.addAll(manual);
@@ -48,7 +48,7 @@ public class InstallJob extends PluginJob {
             setMessage("Fetching Projects");
             //fetch all required projects from ore
             Set<OreProject> remoteProjects = RateLimiter.waitForAll( pluginsToCheck.stream()
-                            .map(missing -> OreGet.getOre().getRateLimiter().enqueue(() -> OreGet.getOre().getProject(missing)))
+                            .map(missing -> OreGetPlugin.getOre().getRateLimiter().enqueue(() -> OreGetPlugin.getOre().getProject(missing)))
                             .collect(Collectors.toSet()))
                     .stream()
                             .filter(Optional::isPresent)
@@ -64,7 +64,7 @@ public class InstallJob extends PluginJob {
                             pluginsOnOre.add(project.getPluginId());
                             if (project.isInstalled()) {
                                 //requires update?
-                                ProjectContainer installedData = OreGet.getPluginCache().findProject(project.getPluginId()).get();
+                                ProjectContainer installedData = OreGetPlugin.getPluginCache().findProject(project.getPluginId()).get();
                                 boolean canUpdate = false;
                                 String localVersion = installedData.getCachedVersion().isPresent() ? installedData.getCachedVersion().get() :
                                         ( installedData.getInstalledVersion().isPresent() ? installedData.getInstalledVersion().get() :

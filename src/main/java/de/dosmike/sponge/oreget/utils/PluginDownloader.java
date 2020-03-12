@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.utils;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.oreapi.OreApiV2;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
@@ -36,7 +36,7 @@ public class PluginDownloader extends Thread implements Runnable {
     /** TODO display a disclaimer before downloading a file! (To be done somewhere before this) */
     @Override
     public void run() {
-        URL targetUrl = OreGet.getOre().getDownloadURL(project.getNamespace(), version);
+        URL targetUrl = OreGetPlugin.getOre().getDownloadURL(project.getNamespace(), version);
         if (targetUrl==null) {
             done = true;
             return;
@@ -50,7 +50,7 @@ public class PluginDownloader extends Thread implements Runnable {
 //            connection.setRequestProperty("Accept", "application/octet-stream");
             connection.setRequestProperty("Accept", "*/*");
             connection.setRequestProperty("User-Agent", "OreGet (by DosMike)/1.0");
-            OreGet.getOre().getSession().authenticate(connection);
+            OreGetPlugin.getOre().getSession().authenticate(connection);
             connection.setDoInput(true);
             if (connection.getResponseCode() < 200 || connection.getResponseCode() >= 400) {
                 OreApiV2.tryPrintErrorBody(connection);
@@ -122,7 +122,7 @@ public class PluginDownloader extends Thread implements Runnable {
     }
 
     public void createDisplay(MessageReceiver receiver) {
-        SpongeExecutorService executor = Sponge.getScheduler().createAsyncExecutor(OreGet.getInstance());
+        SpongeExecutorService executor = Sponge.getScheduler().createAsyncExecutor(OreGetPlugin.getInstance());
         Runnable updateDisplay = ()->{
             Text update = Text.of(String.format("Downloading %s... %.2f%%", project.getPluginId(), getProgress()*100));
             receiver.sendMessage(update);

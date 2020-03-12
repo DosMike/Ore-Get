@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.utils.version;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 import de.dosmike.sponge.oreget.oreapi.v2.*;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
@@ -68,7 +68,7 @@ public class VersionFilter {
     }
 
     public static Optional<OreVersion> getLatestStableVersion(OreProject project) {
-        Optional<OreResultList<OreVersion>> page = OreGet.getOre().waitFor(()->OreGet.getOre().listVersions(project.getPluginId(), null));
+        Optional<OreResultList<OreVersion>> page = OreGetPlugin.getOre().waitFor(()-> OreGetPlugin.getOre().listVersions(project.getPluginId(), null));
         while(page.isPresent() && page.get().getResult().length>0) { // we can theoretically paginate beyond the last page, break
             //scan page
             Optional<OreVersion> stable = getFirstStable(page.get().getResult());
@@ -77,7 +77,7 @@ public class VersionFilter {
             //if page is last page break
             if (page.get().getPagination().getPage() == page.get().getPagination().getLastPage()) break;
             String nextPageQuery = page.get().getPagination().getQueryNext();
-            page = OreGet.getOre().waitFor(()->OreGet.getOre().listVersions(project.getPluginId(), nextPageQuery));
+            page = OreGetPlugin.getOre().waitFor(()-> OreGetPlugin.getOre().listVersions(project.getPluginId(), nextPageQuery));
         }
         return Optional.empty();
     }

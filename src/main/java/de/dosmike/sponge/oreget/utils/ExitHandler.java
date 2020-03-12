@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.utils;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.OreGetPlugin;
 
 import java.io.*;
 import java.util.HashMap;
@@ -33,10 +33,10 @@ public class ExitHandler extends Thread {
 
     @Override
     public void run() {
-        OreGet.getPluginCache().save();
-        OreGet.getPluginCache().notifyExitHandler();
+        OreGetPlugin.getPluginCache().save();
+        OreGetPlugin.getPluginCache().notifyExitHandler();
         try {
-            OreGet.getOre().close();
+            OreGetPlugin.getOre().close();
         } catch (Exception ignore) {
             /* overwrite signature for closeable thorws, make the ide happy with this catch */
         }
