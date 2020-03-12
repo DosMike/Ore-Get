@@ -2,7 +2,7 @@
   "modid": "oreget",
   "name": "Ore-Get",
   "description": "Manage Ore Plugins from your server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "url": "https://github.com/DosMike/OreGet",
   "authorList": [ "DosMike" ],
   "useDependencyInformation": "true",
