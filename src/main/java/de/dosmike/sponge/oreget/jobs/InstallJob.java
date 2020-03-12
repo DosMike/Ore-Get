@@ -60,7 +60,7 @@ public class InstallJob extends PluginJob {
             int i=0;
             for (OreProject project : remoteProjects) {
                 if (project.getPromotedVersions().length > 0) {
-                    VersionFilter.getLatestStableVersion(project).ifPresent(version -> {
+                    VersionFilter.getLatestPromotedVersion(project).ifPresent(version -> {
                             pluginsOnOre.add(project.getPluginId());
                             if (project.isInstalled()) {
                                 //requires update?
