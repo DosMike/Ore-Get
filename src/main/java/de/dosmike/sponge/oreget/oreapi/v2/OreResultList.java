@@ -3,10 +3,11 @@ package de.dosmike.sponge.oreget.oreapi.v2;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 
-public class OreResultList<T> {
+public class OreResultList<T> implements Serializable {
 
     OrePagination pagination;
     T[] result;

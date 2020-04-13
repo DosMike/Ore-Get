@@ -46,6 +46,10 @@ configurations {
 dependencies {
     compileOnly 'org.jetbrains:annotations:16.0.2'
     compileOnly 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
+
+    shadow 'org.fusesource.jansi:jansi:1.18'
+
+    shadow 'com.google.code.gson:gson:2.8.0'
 }
 
 
@@ -65,10 +69,12 @@ task removeOldVersions() {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task uberJar(type:ShadowJar, group:'_Plugin', dependsOn:removeOldVersions) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    exclude 'META-INF/**'
+    exclude 'META-INF/MANIFEST.MF'
+    relocate 'com.google.gson', 'shadow.oreget.com.google.gson'
     manifest {
         attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version)
+                'Implementation-Version': project.version,
+                'Main-Class': 'de.dosmike.sponge.oreget.multiplatform.terminal.TerminalArgsParser')
     }
     configurations = [project.configurations.shadow]
     from(sourceSets.main.resources)

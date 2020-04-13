@@ -1,5 +1,5 @@
 # Ore-Get
-A apt-get inspired Plugin management tool
+A apt-get inspired Plugin management tool.
 
 ### How it works
 This plugin connects to the Ore API in order to fetch information about 
@@ -8,6 +8,10 @@ while the server is running, ore-get will create a shell-script based on
 your server OS that can be executed by your server's watchdog, after the 
 server terminated. (This script will only be created if the server did *not* 
 crash).
+
+You can run this as plugin like any other, or as standalone application.
+To run it as standalone, put it into your minecraft server root, mods or 
+plugin folder and call it through `java -jar oreget.jar`.
 
 #### On Windows
 The script is called `oreget_postserver.bat`. If your watchdog is a batch
@@ -71,6 +75,40 @@ cancel the plugin installation/upgrade
 # External Connections
 The connection to Ore is obviously required.  
 No other connections, that's all.
+
+# License Stuff
+
+**Fancy terminal colors on Windows in standalone mode**   
+_JANSI_ is licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0) and available at [https://github.com/fusesource/jansi](https://github.com/fusesource/jansi)   
+Copyright &copy; 2009 fusesource
+
+**Processing JSON responses from the Ore API**   
+_Gson_ is licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0) and available at [https://github.com/google/gson](https://github.com/google/gson)   
+Copyright &copy; 2008 Google Inc.
+
+**This Project itself**   
+_Ore-Get_ is licensed under the MIT License.
+Copyright &copy; 2020 DosMike
+
+### Apache 2.0 License Note  
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+### MIT License
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### Need Help?
 #### [Join my Discord](https://discord.gg/E592Gdu)

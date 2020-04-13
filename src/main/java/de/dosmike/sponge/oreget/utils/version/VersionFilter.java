@@ -1,23 +1,24 @@
 package de.dosmike.sponge.oreget.utils.version;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.cache.PluginCache;
+import de.dosmike.sponge.oreget.cache.ProjectContainer;
+import de.dosmike.sponge.oreget.multiplatform.SharedInstances;
 import de.dosmike.sponge.oreget.oreapi.v2.*;
-import org.spongepowered.api.Platform;
-import org.spongepowered.api.Sponge;
 
 import java.util.Optional;
 
 public class VersionFilter {
 
     static boolean testSpongeVersion(OreTag[] tags) {
+        String spongeApiVersion = PluginCache.get().findProject("spongeapi").flatMap(ProjectContainer::getInstalledVersion).orElse("");
+        //Implementation version is formatted GameVersion-SpongeImplVersion
+        //  With each being a Major.Minor.Revision
+        //Api version is formatted SpongeApiVersion-CommitHash <-- used for recommended filters
+        int i = spongeApiVersion.indexOf('-');
+        if (i >= 0) spongeApiVersion = spongeApiVersion.substring(0,i);
+
         for (OreTag tag : tags) {
             if (tag.getName().equalsIgnoreCase("Sponge")) {
-                String version = Sponge.getPlatform().getContainer(Platform.Component.API).getVersion().get();
-                //Implementation version is formatted GameVersion-SpongeImplVersion
-                //  With each being a Major.Minor.Revision
-                //Api version is formatted SpongeApiVersion-CommitHash <-- used for recommended filters
-                int i = version.indexOf('-');
-                if (i >= 0) version = version.substring(0,i);
                 String range = tag.getData();
                 // ORE DOES NOT PROMOTE VERSIONS WITHOUT SPONGE API VERSION RANGE - i disagree on that but won't force that:
                 // if range is missing, this should indicate that the plugin should run on any API (otherwise author would set it)
@@ -30,9 +31,9 @@ public class VersionFilter {
                 if (test.lenient()) {
                     // since the range is lenient it has to be formatted like a single version.
                     // this we can do the following:
-                    return (new Version(version).getMajor() == new Version(range).getMajor());
+                    return (new Version(spongeApiVersion).getMajor() == new Version(range).getMajor());
                 } else {
-                    return test.test(version);
+                    return test.test(spongeApiVersion);
                 }
             }
         }
@@ -89,10 +90,10 @@ public class VersionFilter {
         return getAnyLatest(project.getPromotedVersions());
     }
     public static Optional<OreVersion> getLatestPromotedVersion(OreProject project) {
-        return getAnyLatest(project.getPromotedVersions()).flatMap((v)->OreGet.getOre().waitFor(()->OreGet.getOre().getVersion(project.getPluginId(), v.getVersion())));
+        return getAnyLatest(project.getPromotedVersions()).flatMap((v)-> SharedInstances.getOre().waitFor(()->SharedInstances.getOre().getVersion(project.getPluginId(), v.getVersion())));
     }
     public static Optional<OreVersion> getLatestStableVersion(OreProject project) {
-        Optional<OreResultList<OreVersion>> page = OreGet.getOre().waitFor(()->OreGet.getOre().listVersions(project.getPluginId(), null));
+        Optional<OreResultList<OreVersion>> page = SharedInstances.getOre().waitFor(()->SharedInstances.getOre().listVersions(project.getPluginId(), null));
         while(page.isPresent() && page.get().getResult().length>0) { // we can theoretically paginate beyond the last page, break
             //scan page
             Optional<OreVersion> stable = getFirstStable(page.get().getResult());
@@ -101,7 +102,7 @@ public class VersionFilter {
             //if page is last page break
             if (page.get().getPagination().getPage() == page.get().getPagination().getLastPage()) break;
             String nextPageQuery = page.get().getPagination().getQueryNext();
-            page = OreGet.getOre().waitFor(()->OreGet.getOre().listVersions(project.getPluginId(), nextPageQuery));
+            page = SharedInstances.getOre().waitFor(()->SharedInstances.getOre().listVersions(project.getPluginId(), nextPageQuery));
         }
         return Optional.empty();
     }

@@ -1,5 +1,6 @@
 package de.dosmike.sponge.oreget.utils.version;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
  * A bit extended to major.minor[.revision[-qualifier|-build]]
  * see https://cwiki.apache.org/confluence/display/MAVENOLD/Dependency+Mediation+and+Conflict+Resolution#DependencyMediationandConflictResolution-DependencyVersionRanges
  */
-public class Version implements Comparable<Version> {
+public class Version implements Comparable<Version>, Serializable {
 
     private int[] n;
     private String s;

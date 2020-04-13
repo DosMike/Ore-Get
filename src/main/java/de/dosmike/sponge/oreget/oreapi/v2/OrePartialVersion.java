@@ -4,13 +4,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
 
+import java.io.Serializable;
+
 /**
  * IMPORTANT: This is only a partial version that
  * contains the most crucial display information for recommended versions
  * to be displayed on the project page. For full version objects please
  * use the version endpoints.
  */
-public class OrePartialVersion {
+public class OrePartialVersion implements Serializable {
 
     String version;
     OreTag[] tags;

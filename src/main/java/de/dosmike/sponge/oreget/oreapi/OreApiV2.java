@@ -7,10 +7,7 @@ import de.dosmike.sponge.oreget.utils.CachingCollection;
 import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
@@ -293,5 +290,19 @@ public class OreApiV2 implements AutoCloseable {
         else return collection.stream()
                 .filter(v -> v.getName().equalsIgnoreCase(versionName))
                 .findFirst();
+    }
+
+    public void exportState(OutputStream outputStream) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(outputStream);
+        oos.writeObject(oreProjectCache);
+        oos.writeObject(oreVersionCache);
+        oos.writeObject(session);
+        oos.flush();
+    }
+    public void importState(InputStream inputStream) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(inputStream);
+        oreProjectCache = (CachingCollection<OreProject>) ois.readObject();
+        oreVersionCache = (Map<String, CachingCollection<OreVersion>>) ois.readObject();
+        session = (OreSession) ois.readObject();
     }
 }

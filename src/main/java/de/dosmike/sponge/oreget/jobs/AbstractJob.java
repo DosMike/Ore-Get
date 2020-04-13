@@ -1,7 +1,7 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import de.dosmike.sponge.oreget.multiplatform.JobManager;
+import de.dosmike.sponge.oreget.multiplatform.Logging;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +26,7 @@ public interface AbstractJob extends Runnable {
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
-            JobManager.get().println(Text.of(TextColors.YELLOW, "Confirmation timed out!"));
+            JobManager.get().println(Logging.Color.YELLOW, "Confirmation timed out!");
         } finally {
             JobManager.get().unhang();
         }

@@ -1,8 +1,9 @@
 package de.dosmike.sponge.oreget.oreapi;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.multiplatform.Logging;
 import de.dosmike.sponge.oreget.oreapi.limiter.BucketLimiter;
 import de.dosmike.sponge.oreget.oreapi.limiter.Limiter;
+import de.dosmike.sponge.oreget.utils.TracingThreadFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -23,7 +24,8 @@ public class RateLimiter extends Thread {
     public RateLimiter(Limiter limiter) {
         this.limit = limiter;
         try {
-            Thread.currentThread().setName("Ore Query Limiter");
+            setName("Ore Query Limiter");
+            setUncaughtExceptionHandler(TracingThreadFactory.exceptionTracePrinter);
         } catch (SecurityException ignore) {}
     }
     public RateLimiter() {
@@ -62,7 +64,7 @@ public class RateLimiter extends Thread {
                 limit.waitForNext();
             }
         }
-        OreGet.l("Rate Limiter terminated");
+        Logging.log(null,"Rate Limiter terminated");
     }
 
     public <T> Future<T> enqueue(Supplier<T> task) {
@@ -127,7 +129,7 @@ public class RateLimiter extends Thread {
     public <T> Optional<T> waitFor(Supplier<T> task) {
         try {
             return Optional.of(enqueue(task).get());
-        } catch (InterruptedException | ExecutionException ignore) { }
+        } catch (InterruptedException | ExecutionException ignore) { ignore.printStackTrace(); }
         return Optional.empty();
     }
 

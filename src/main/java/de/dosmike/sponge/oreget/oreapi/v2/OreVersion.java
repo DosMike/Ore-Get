@@ -5,7 +5,9 @@ import com.google.gson.JsonObject;
 import de.dosmike.sponge.oreget.oreapi.OreApiV2;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
 
-public class OreVersion {
+import java.io.Serializable;
+
+public class OreVersion implements Serializable {
 
     long createdAt;
     String name;
