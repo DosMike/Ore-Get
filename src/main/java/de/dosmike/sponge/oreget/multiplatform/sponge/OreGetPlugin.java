@@ -1,12 +1,9 @@
-package de.dosmike.sponge.oreget;
+package de.dosmike.sponge.oreget.multiplatform.sponge;
 
 import com.google.inject.Inject;
 import de.dosmike.sponge.oreget.cache.PluginCache;
-import de.dosmike.sponge.oreget.oreapi.OreApiV2;
 import de.dosmike.sponge.oreget.utils.ExitHandler;
-import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
@@ -21,29 +18,25 @@ import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.event.service.ChangeServiceProviderEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.service.permission.PermissionDescription;
 import org.spongepowered.api.service.permission.PermissionService;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
-@Plugin(id = "oreget", name = "Ore-Get", version = "1.0.2")
+@Plugin(id = "oreget", name = "Ore-Get", version = "1.1")
 public class OreGetPlugin {
+
+    public static void main(String[] args) {
+        throw new UnsupportedOperationException("This main only exists to give the class a 'Runnable'-Type icon in your IDE");
+    }
 
     static OreGetPlugin instance;
     public static OreGetPlugin getInstance() {
         return instance;
     }
 
-    static SpongeExecutorService async;
-    public static SpongeExecutorService async() {
-        return async;
-    }
-
     PluginContainer getContainer() { return Sponge.getPluginManager().fromInstance(this).orElseThrow(()->new InternalError("No plugin container for self returned")); }
-
 
     private static PermissionService permissions = null;
     public static Optional<PermissionService> getPermissions() {
@@ -61,17 +54,11 @@ public class OreGetPlugin {
 
     @Inject
     private Logger logger;
-    public static Logger getLogger() { return instance.logger; }
     public static void l(String format, Object... args) {
         instance.logger.info(String.format(format, args));
     }
     public static void w(String format, Object... args) {
         instance.logger.warn(String.format(format, args));
-    }
-
-    private OreApiV2 oreApi = new OreApiV2();
-    public static OreApiV2 getOre() {
-        return instance.oreApi;
     }
 
     @Inject
@@ -83,31 +70,19 @@ public class OreGetPlugin {
     @ConfigDir(sharedRoot = false)
     private Path privateConfigDir;
 
-    private Path pluginDirectory;
-    public Path getPluginDirectory() {
-        return pluginDirectory;
-    }
-
-    private PluginCache pluginCache = new PluginCache();
-    public static PluginCache getPluginCache() {
-        return instance.pluginCache;
-    }
-
     @Listener
     public void onServerInit(GameInitializationEvent event) {
         instance = this;
-        async = Sponge.getScheduler().createAsyncExecutor(OreGetPlugin.getInstance());
         l("Registering events&commands...");
         Sponge.getEventManager().registerListeners(this, new EventListener());
         CommandRegister.register();
-        pluginDirectory = getContainer().getSource().get().getParent();
-        loadConfigs();
-        l("Rebuilding plugin cache...");
-        pluginCache.scanLoaded();
     }
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
+        l("Rebuilding plugin cache...");
+        PluginCache.get().scanLoaded();
+
         ExitHandler.attach();
         l("OreGet is now ready!");
     }
@@ -115,19 +90,6 @@ public class OreGetPlugin {
     @Listener
     public void onServerStopping(GameStoppingEvent event) {
 
-    }
-
-    public void loadConfigs() {
-        //settings.conf
-        HoconConfigurationLoader loader = HoconConfigurationLoader.builder()
-                .setPath(privateConfigDir.resolve("settings.conf"))
-                .build();
-        try {
-            CommentedConfigurationNode root = loader.load(ConfigurationOptions.defaults());
-
-        } catch (IOException e) {
-            new RuntimeException("Could not load settings.conf", e).printStackTrace();
-        }
     }
 
 }

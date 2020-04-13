@@ -1,9 +1,9 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGetPlugin;
+import de.dosmike.sponge.oreget.cache.PluginCache;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import de.dosmike.sponge.oreget.multiplatform.JobManager;
+import de.dosmike.sponge.oreget.multiplatform.Logging;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,24 +25,24 @@ public class AutoRemoveJob implements AbstractJob {
     @Override
     public void run() {
         Set<ProjectContainer> stubbed = new HashSet<>();
-        int i = 0; int amount = OreGetPlugin.getPluginCache().getProjects().size();
-        for (ProjectContainer container : OreGetPlugin.getPluginCache().getProjects()) {
-            if (OreGetPlugin.getPluginCache().isStubbed(container))
+        int i = 0; int amount = PluginCache.get().getProjects().size();
+        for (ProjectContainer container : PluginCache.get().getProjects()) {
+            if (PluginCache.get().isStubbed(container))
                 stubbed.add(container);
             i++;
             progress = (float)i/amount;
         }
         if (stubbed.size()>0) {
-            stubbed.forEach(project -> OreGetPlugin.getPluginCache().markForRemoval(project, false));
-            JobManager.get().println(Text.of(TextColors.YELLOW, "Found ", stubbed.size(), " stubbed plugins:"));
-            JobManager.get().println(Text.of(
+            stubbed.forEach(project -> PluginCache.get().markForRemoval(project, false));
+            JobManager.get().println(Logging.Color.YELLOW, "Found ", stubbed.size(), " stubbed plugins:");
+            JobManager.get().println(
                     stubbed.stream()
                     .map(ProjectContainer::getPluginId)
-                    .collect(Collectors.joining(", "))
+                    .collect(Collectors.joining(", ")
             ));
-            JobManager.get().println(Text.of(TextColors.RED, "The plugins will be removed with the next /stop"));
+            JobManager.get().println(Logging.Color.RED, "The plugins will be removed with the next /stop");
         } else {
-            JobManager.get().println(Text.of("Could not find any stubbed dependencies"));
+            JobManager.get().println("Could not find any stubbed dependencies");
         }
     }
 }

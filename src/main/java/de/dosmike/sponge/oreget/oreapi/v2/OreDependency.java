@@ -3,7 +3,9 @@ package de.dosmike.sponge.oreget.oreapi.v2;
 import com.google.gson.JsonObject;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
 
-public class OreDependency {
+import java.io.Serializable;
+
+public class OreDependency implements Serializable {
 
     String pluginId;
     String version;

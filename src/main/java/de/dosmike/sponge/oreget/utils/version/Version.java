@@ -1,5 +1,6 @@
 package de.dosmike.sponge.oreget.utils.version;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7,8 +8,11 @@ import java.util.regex.Pattern;
 /** Supports version in the format major[.minor[.build[.revision[-[stage][patch]]
  * where stage is sorted alphabetically (alpha, beta, rc, release).<br>
  * you may use a underscore instead of the dash and another optional underscore/dash between stage and patch.<br>
- * sort priority is left to right. */
-public class Version implements Comparable<Version> {
+ * sort priority is left to right.
+ * A bit extended to major.minor[.revision[-qualifier|-build]]
+ * see https://cwiki.apache.org/confluence/display/MAVENOLD/Dependency+Mediation+and+Conflict+Resolution#DependencyMediationandConflictResolution-DependencyVersionRanges
+ */
+public class Version implements Comparable<Version>, Serializable {
 
     private int[] n;
     private String s;
@@ -27,10 +31,10 @@ public class Version implements Comparable<Version> {
         String patch = m.group(6);
         n = new int[]{
                 Integer.parseInt(major),
-                minor == null ? -1 : Integer.parseInt(minor),
-                build == null ? -1 : Integer.parseInt(build),
-                revis == null ? -1 : Integer.parseInt(revis),
-                patch == null ? -1 : Integer.parseInt(patch)
+                minor == null ? 0 : Integer.parseInt(minor),
+                build == null ? 0 : Integer.parseInt(build),
+                revis == null ? 0 : Integer.parseInt(revis),
+                patch == null ? 0 : Integer.parseInt(patch)
         };
         s = stage==null?"":stage;
     }
@@ -39,19 +43,19 @@ public class Version implements Comparable<Version> {
     public int getMajor() {
         return n[0];
     }
-    /** @return Major.<i><b>Minor</b></i>.Build.Revision-StagePatch or -1 if not set */
+    /** @return Major.<i><b>Minor</b></i>.Build.Revision-StagePatch or 0 if not set */
     public int getMinor() {
         return n[1];
     }
-    /** @return Major.Minor.<i><b>Build</b></i>.Revision-StagePatch or -1 if not set */
+    /** @return Major.Minor.<i><b>Build</b></i>.Revision-StagePatch or 0 if not set */
     public int getBuild() {
         return n[2];
     }
-    /** @return Major.Minor.Build.<i><b>Revision</b></i>-StagePatch or -1 if not set */
+    /** @return Major.Minor.Build.<i><b>Revision</b></i>-StagePatch or 0 if not set */
     public int getRevision() {
         return n[3];
     }
-    /** @return Major.Minor.Build.Revision-Stage<i><b>Patch</b></i> or -1 if not set */
+    /** @return Major.Minor.Build.Revision-Stage<i><b>Patch</b></i> or 0 if not set */
     public int getPatch() {
         return n[4];
     }
@@ -92,7 +96,10 @@ public class Version implements Comparable<Version> {
         if ((c=Integer.compare(n[1], o.n[1]))!=0) return c;
         if ((c=Integer.compare(n[2], o.n[2]))!=0) return c;
         if ((c=Integer.compare(n[3], o.n[3]))!=0) return c;
-        if ((c=s.compareTo(o.s))!=0) return c;
+        if ( s.isEmpty() != o.s.isEmpty() ) {
+            if (s.isEmpty()) return -1; //no stage == usually release (so higher)
+            return s.toLowerCase().compareTo(o.s.toLowerCase());
+        }
         if ((c=Integer.compare(n[4], o.n[4]))!=0) return c;
         return 0;
     }

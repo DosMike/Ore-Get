@@ -47,18 +47,9 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:16.0.2'
     compileOnly 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
 
-    //logging
-    //shadow 'org.fusesource.jansi:jansi:1.18'
-    shadow 'org.slf4j:slf4j-api:1.7.25'
-    shadow 'org.apache.logging.log4j:log4j-api:2.13.1'
-    shadow 'org.apache.logging.log4j:log4j-core:2.13.1'
-    shadow 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+    shadow 'org.fusesource.jansi:jansi:1.18'
 
-    //usually provided by minecraft
     shadow 'com.google.code.gson:gson:2.8.0'
-    shadow 'org.apache.commons:commons-lang3:3.5'
-    shadow 'com.google.errorprone:error_prone_annotations:2.0.15'
-    shadow 'com.google.guava:guava:21.0'
 }
 
 
@@ -77,12 +68,13 @@ task removeOldVersions() {
 }
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task uberJar(type:ShadowJar, group:'_Plugin', dependsOn:removeOldVersions) {
-    duplicatesStrategy = DuplicatesStrategy.WARN
-    exclude 'META-INF/**'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'META-INF/MANIFEST.MF'
+    relocate 'com.google.gson', 'shadow.oreget.com.google.gson'
     manifest {
         attributes('Implementation-Title': project.name,
                 'Implementation-Version': project.version,
-                'Main-Class': 'de.dosmike.sponge.oreget.OreGetTerminal')
+                'Main-Class': 'de.dosmike.sponge.oreget.multiplatform.terminal.TerminalArgsParser')
     }
     configurations = [project.configurations.shadow]
     from(sourceSets.main.resources)
@@ -113,8 +105,7 @@ task rebuild(group:'_Plugin') {
 jar {
     manifest {
         attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version
-        )
+                'Implementation-Version': project.version)
     }
 }
 

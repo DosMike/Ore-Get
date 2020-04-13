@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.utils;
 
-import de.dosmike.sponge.oreget.OreGetPlugin;
+import de.dosmike.sponge.oreget.multiplatform.sponge.OreGetPlugin;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.command.CommandException;

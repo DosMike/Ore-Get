@@ -33,6 +33,7 @@ public class VersionRange {
     /** Test if a version is valid */
     public interface VersionTest extends Predicate<String> {
         boolean test(String version);
+        default boolean lenient() { return false; }
     }
 
     /**
@@ -49,10 +50,20 @@ public class VersionRange {
 
         try {
 
+            // no bounds is a soft requirement. any version goes
             matcher = pattern0.matcher(string);
             if (matcher.matches()) {
                 String vleft = matcher.group(1);
-                return (v) -> GEQ.test(v, vleft);
+                return new VersionTest(){
+                    @Override
+                    public boolean test(String version) {
+                        return GEQ.test(version, vleft);
+                    }
+                    @Override
+                    public boolean lenient() {
+                        return true;
+                    }
+                };
             }
 
             matcher = pattern1.matcher(string);

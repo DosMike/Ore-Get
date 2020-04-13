@@ -1,12 +1,13 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGetPlugin;
+import de.dosmike.sponge.oreget.cache.PluginCache;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
+import de.dosmike.sponge.oreget.multiplatform.JobManager;
+import de.dosmike.sponge.oreget.multiplatform.Logging;
+import de.dosmike.sponge.oreget.multiplatform.PlatformProbe;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
 import de.dosmike.sponge.oreget.utils.PluginDownloader;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -24,10 +25,10 @@ public abstract class PluginJob implements AbstractJob {
         ResolveResult result = resolveProjects();
 
         if (result.pluginsNotOnOre.size()>0) {
-            JobManager.get().println(Text.of("The following plugins/mods are not available on Ore: ", String.join(", ", result.pluginsNotOnOre)));
+            JobManager.get().println("The following plugins/mods are not available on Ore: ", String.join(", ", result.pluginsNotOnOre));
         }
         if (result.toDownload.isEmpty() && result.pluginsToRemove.isEmpty()) {
-            JobManager.get().println(Text.of("Seems like everything's up to date."));
+            JobManager.get().println("Seems like everything's up to date.");
             return;
         }
         progress = 0f;
@@ -35,24 +36,24 @@ public abstract class PluginJob implements AbstractJob {
         // Print big notification block
         message = "Downloading Plugins";
         if (!result.toDownload.isEmpty()) { //ignore intellij, this can be empty
-            JobManager.get().println(Text.of(TextColors.YELLOW, "The following projects dependencies will be installed: "));
+            JobManager.get().println(Logging.Color.YELLOW, "The following projects dependencies will be installed: ");
             List<String> tmpList = new LinkedList<>(result.getPluginsToDownload());
             tmpList.removeAll(result.pluginsRequestedManually);
-            JobManager.get().println(Text.of(String.join(", ", tmpList)));
-            JobManager.get().println(Text.of(TextColors.YELLOW, "The following NEW projects will be installed: "));
-            JobManager.get().println(Text.of(String.join(", ", result.pluginsToInstall)));
+            JobManager.get().println(String.join(", ", tmpList));
+            JobManager.get().println(Logging.Color.YELLOW, "The following NEW projects will be installed: ");
+            JobManager.get().println(String.join(", ", result.pluginsToInstall));
         }
         if (!result.pluginsToRemove.isEmpty()) {
-            JobManager.get().println(Text.of(TextColors.YELLOW, "The following plugins will be removed:"));
-            JobManager.get().println(Text.of(String.join(", ", result.pluginsToRemove)));
+            JobManager.get().println(Logging.Color.YELLOW, "The following plugins will be removed:");
+            JobManager.get().println(String.join(", ", result.pluginsToRemove));
         }
         if (result.pluginsNotReviewed.size()>0) {
-            JobManager.get().println(Text.of(TextColors.YELLOW, String.format("%d to install, %d to upgrade, %d to remove", result.pluginsToInstall.size(), result.pluginsToUpdate.size(), result.pluginsToRemove.size())));
-            JobManager.get().println(Text.of(TextColors.GOLD, "The following Plugins have not been reviewed by the Ore moderation staff yet and may not be safe to use:"));
-            JobManager.get().println(Text.of(String.join(", ", result.pluginsNotReviewed)));
-            JobManager.get().println(Text.of(TextColors.GOLD, "The Sponge teams as well as the OreGet Developer disclaim all responsibility for any harm to your server or system should you choose not to heed this warning"));
+            JobManager.get().println(Logging.Color.YELLOW, String.format("%d to install, %d to upgrade, %d to remove", result.pluginsToInstall.size(), result.pluginsToUpdate.size(), result.pluginsToRemove.size()));
+            JobManager.get().println(Logging.Color.GOLD, "The following Plugins have not been reviewed by the Ore moderation staff yet and may not be safe to use:");
+            JobManager.get().println(String.join(", ", result.pluginsNotReviewed));
+            JobManager.get().println(Logging.Color.GOLD, "The Sponge teams as well as the OreGet Developer disclaim all responsibility for any harm to your server or system should you choose not to heed this warning");
         }
-        JobManager.get().println(Text.of("Type ", TextColors.AQUA, "/ore-get confirm", TextColors.RESET, " to continue"));
+        JobManager.get().println("Type ", Logging.Color.AQUA, "/ore-get confirm", Logging.Color.RESET, " to continue");
         if (!confirm()) return; // require confirmation
 
         // Proceed to install
@@ -65,30 +66,33 @@ public abstract class PluginJob implements AbstractJob {
             while (!pdl.isDone()) { //print progress every 10% or 1 second
                 if (System.currentTimeMillis()-previous > 1000) {
                     previous = System.currentTimeMillis();
-                    JobManager.get().println(Text.of(TextColors.GRAY, "Downloading ", TextColors.WHITE, entry.getKey().getName(), ": ", entry.getValue().getName(), TextColors.GRAY,"... ", (int)(pdl.getProgress()*100), "%"));
+                    JobManager.get().println(Logging.Color.GRAY, "Downloading ", Logging.Color.WHITE, entry.getKey().getName(), ": ", entry.getValue().getName(), Logging.Color.GRAY,"... ", (int)(pdl.getProgress()*100), "%");
                 }
                 progress = i/j + pdl.getProgress()*progressPerPlugin;
                 Thread.yield();
             }
-            JobManager.get().println(Text.of(TextColors.GRAY, "Downloading ", TextColors.WHITE, entry.getKey().getName(), ": ", entry.getValue().getName(), TextColors.GRAY,"... 100%"));
+            JobManager.get().println(Logging.Color.GRAY, "Downloading ", Logging.Color.WHITE, entry.getKey().getName(), ": ", entry.getValue().getName(), Logging.Color.GRAY,"... 100%");
             if (!pdl.target().isPresent()) {
-                JobManager.get().println(Text.of(TextColors.RED, "Could not download plugin "+entry.getKey().getName()+" - Job cancelled!"));
+                JobManager.get().println(Logging.Color.RED, "Could not download plugin "+entry.getKey().getName()+" - Job cancelled!");
                 return;
             }
-            ProjectContainer container = OreGetPlugin.getPluginCache().findProject(entry.getKey().getPluginId()).orElseGet(()->{
+            ProjectContainer container = PluginCache.get().findProject(entry.getKey().getPluginId()).orElseGet(()->{
                 ProjectContainer newContainer = new ProjectContainer(entry.getKey().getPluginId().toLowerCase());
                 newContainer.markAuto(!result.pluginsRequestedManually.contains(entry.getKey().getPluginId())); //if it's not the requested, mark auto
                 return newContainer;
             });
-            container.load(entry.getKey(), entry.getValue(), pdl.target().get().getName());
-            OreGetPlugin.getPluginCache().registerPlugin(container);
+            container.load(entry.getKey(), entry.getValue(), pdl.target().get().getFileName().toString());
+            PluginCache.get().registerPlugin(container);
             i++;
         }
         //remove plugins
         for (String entry : result.pluginsToRemove) {
-            OreGetPlugin.getPluginCache().markForRemoval(entry, false);
+            PluginCache.get().markForRemoval(entry, false);
         }
-        JobManager.get().println(Text.of("DONE ", TextColors.RED, "To complete the installation, please restart the server"));
+        if (PlatformProbe.isSponge())
+            JobManager.get().println("DONE ", Logging.Color.RED, "To complete the installation, please restart the server");
+        else
+            JobManager.get().println("DONE ", Logging.Color.RED, "Run the post-script to complete installation");
     }
 
     abstract ResolveResult resolveProjects();

@@ -2,12 +2,14 @@ package de.dosmike.sponge.oreget.oreapi.v2;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import de.dosmike.sponge.oreget.cache.PluginCache;
 import de.dosmike.sponge.oreget.oreapi.OreApiV2;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
-import org.spongepowered.api.Sponge;
+
+import java.io.Serializable;
 
 /** does not parse URLs to prevent Malformed URL Exceptions */
-public class OreProject {
+public class OreProject implements Serializable {
 
     long createdAt;
     String pluginId;
@@ -153,7 +155,7 @@ public class OreProject {
     }
 
     public boolean isInstalled() {
-        return Sponge.getPluginManager().getPlugin(getPluginId()).isPresent();
+        return PluginCache.get().findProject(getPluginId()).isPresent();
     }
 
 }

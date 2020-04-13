@@ -1,18 +1,26 @@
 package de.dosmike.sponge.oreget.cache;
 
 import com.itwookie.inireader.INIConfig;
-import de.dosmike.sponge.oreget.OreGetPlugin;
-import de.dosmike.sponge.oreget.decoupler.AbstractionProvider;
-import de.dosmike.sponge.oreget.decoupler.IPlugin;
+import de.dosmike.sponge.oreget.multiplatform.PlatformProbe;
+import de.dosmike.sponge.oreget.multiplatform.PluginScanner;
 import de.dosmike.sponge.oreget.utils.ExitHandler;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 public class PluginCache {
+
+    private static PluginCache instance=null;
+    public static PluginCache get() {
+        if (instance == null) {
+            instance = new PluginCache();
+        }
+        return instance;
+    }
 
     private Set<ProjectContainer> cache = new HashSet<>();
     private INIConfig cacheInfo;
@@ -23,13 +31,12 @@ public class PluginCache {
     public Collection<ProjectContainer> getProjects() {
         return cache;
     }
-    public static final File DIRECTORY = new File(".", "oreget_cache");
+    public static final Path DIRECTORY = PlatformProbe.getCacheDirectory();
 
     public PluginCache() {
         cacheInfo = new INIConfig();
-        cacheInfoFile = new File(DIRECTORY, "plugin.cache");
-        if (!cacheInfoFile.exists()) cacheInfoFile.getParentFile().mkdirs();
-        else cacheInfo.loadFrom(cacheInfoFile);
+        cacheInfoFile = new File(DIRECTORY.toFile(), "plugin.cache");
+        if (cacheInfoFile.exists()) cacheInfo.loadFrom(cacheInfoFile);
     }
 
     public void registerPlugin(ProjectContainer container) {
@@ -46,20 +53,18 @@ public class PluginCache {
     }
 
     public void scanLoaded() {
-        AbstractionProvider.get().getPlugins().forEach(pc->{
-            ProjectContainer cont = findProject(pc.getId()).orElseGet(()->new ProjectContainer(pc));
-
+        PluginScanner.create().getProjects().stream().filter(cont->!findProject(cont.getPluginId()).isPresent()).forEach(cont ->{
             boolean auto = false;
-            if (!cacheInfo.hasKey("auto install", pc.getId()))
-                cacheInfo.set(pc.getId(), "false"); //we haven't seen this plugin before, assume manual install
+            if (!cacheInfo.hasKey("auto install", cont.getPluginId()))
+                cacheInfo.set(cont.getPluginId(), "false"); //we haven't seen this plugin before, assume manual install
             else
-                auto = "true".equals(cacheInfo.get(pc.getId()));
+                auto = "true".equals(cacheInfo.get(cont.getPluginId()));
             cont.markAuto(auto);
 
-            if (cacheInfo.hasKey("hold version", pc.getId()))
-                cont.setVersionHold("true".equalsIgnoreCase(cacheInfo.get(pc.getId())));
-            if (cacheInfo.hasKey("forbidden versions", pc.getId())) {
-                String value = cacheInfo.get(pc.getId());
+            if (cacheInfo.hasKey("hold version", cont.getPluginId()))
+                cont.setVersionHold("true".equalsIgnoreCase(cacheInfo.get(cont.getPluginId())));
+            if (cacheInfo.hasKey("forbidden versions", cont.getPluginId())) {
+                String value = cacheInfo.get(cont.getPluginId());
                 cont.getForbiddenVersions().clear();
                 if (value != null && !value.trim().isEmpty()) {
                     for (String f : value.trim().split(" and "))
@@ -103,11 +108,8 @@ public class PluginCache {
 
     public void notifyExitHandler() {
         for (ProjectContainer container : cache) {
-            Optional<IPlugin> spongeData = container.getPlugin();
             if (container.doDelete() && container.getInstalledVersion().isPresent()) {
-                spongeData
-                        .flatMap(IPlugin::getSource)
-                        .ifPresent(p->ExitHandler.deleteOnExit(p.toFile()));
+                container.getSource().ifPresent(cont->ExitHandler.deleteOnExit(cont.toFile()));
             }
             if (container.doPurge() && container.getInstalledVersion().isPresent()) {
                 // configdir = config/sponge/general.conf->sponge.general.config-dir
@@ -118,11 +120,9 @@ public class PluginCache {
                 //we can install / update
                 if (container.getInstalledVersion().isPresent()) {
                     //update, remove old version
-                    container.getPlugin()
-                            .flatMap(IPlugin::getSource)
-                            .ifPresent(p->ExitHandler.deleteOnExit(p.toFile()));
+                    container.getSource().ifPresent(cont->ExitHandler.deleteOnExit(cont.toFile()));
                 }
-                ExitHandler.moveOnExit(new File(DIRECTORY, container.getCachedFilename()), OreGetPlugin.getInstance().getPluginDirectory().resolve(container.getCachedFilename()).toFile());
+                ExitHandler.moveOnExit(new File(DIRECTORY.toFile(), container.getCachedFilename()), PlatformProbe.getPluginsDirectory().resolve(container.getCachedFilename()).toFile());
             }
         }
     }
