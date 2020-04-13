@@ -4,8 +4,9 @@ import com.google.gson.JsonObject;
 import de.dosmike.sponge.oreget.oreapi.OreApiV2;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.io.Serializable;
 
-public class OreSession {
+public class OreSession implements Serializable {
 
     String session;
     long expires;

@@ -3,7 +3,9 @@ package de.dosmike.sponge.oreget.oreapi.v2;
 import com.google.gson.JsonObject;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
 
-public class OreNamespace {
+import java.io.Serializable;
+
+public class OreNamespace implements Serializable {
 
     String owner;
     String slug;

@@ -1,7 +1,9 @@
 package de.dosmike.sponge.oreget.jobs;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.cache.PluginCache;
 import de.dosmike.sponge.oreget.cache.ProjectContainer;
+import de.dosmike.sponge.oreget.multiplatform.JobManager;
+import de.dosmike.sponge.oreget.multiplatform.SharedInstances;
 import de.dosmike.sponge.oreget.oreapi.RateLimiter;
 import de.dosmike.sponge.oreget.oreapi.v2.OreDependency;
 import de.dosmike.sponge.oreget.oreapi.v2.OreProject;
@@ -9,7 +11,6 @@ import de.dosmike.sponge.oreget.oreapi.v2.OreReviewState;
 import de.dosmike.sponge.oreget.oreapi.v2.OreVersion;
 import de.dosmike.sponge.oreget.utils.version.Version;
 import de.dosmike.sponge.oreget.utils.version.VersionFilter;
-import org.spongepowered.api.text.Text;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ public class InstallJob extends PluginJob {
         manual.addAll(Arrays.asList(pluginIds));
         if (updateOnly) {
             for (String pluginId : pluginIds)
-                if (OreGet.getPluginCache().findProject(pluginId).isPresent())
+                if (PluginCache.get().findProject(pluginId).isPresent())
                     pluginsToCheck.add(pluginId);
         } else
             pluginsToCheck.addAll(manual);
@@ -33,7 +34,7 @@ public class InstallJob extends PluginJob {
     Set<String> pluginsUpToDate = new HashSet<>(); // ignore list for further cycles
 
     private void progressScan(int toDownloadsize, int toCheckSize, int checkIterator) {
-        JobManager.get().println(Text.of("Resolving dependencies... ["+(checkIterator+toDownloadsize)+"/"+(toCheckSize+toDownloadsize)+"]"));
+        JobManager.get().println("Resolving dependencies... ["+(checkIterator+toDownloadsize)+"/"+(toCheckSize+toDownloadsize)+"]");
     }
 
     @Override
@@ -44,11 +45,11 @@ public class InstallJob extends PluginJob {
         while (!pluginsToCheck.isEmpty()) {
             progressScan(resolveResult.toDownload.size(), pluginsToCheck.size(), 0);
             setProgress( (float)(resolveResult.toDownload.size()) / (pluginsToCheck.size()+resolveResult.toDownload.size()) );
-            JobManager.get().println(Text.of("Resolving dependencies... ["+(resolveResult.toDownload.size())+"/"+(pluginsToCheck.size()+resolveResult.toDownload.size())+"]"));
+            JobManager.get().println("Resolving dependencies... ["+(resolveResult.toDownload.size())+"/"+(pluginsToCheck.size()+resolveResult.toDownload.size())+"]");
             setMessage("Fetching Projects");
             //fetch all required projects from ore
             Set<OreProject> remoteProjects = RateLimiter.waitForAll( pluginsToCheck.stream()
-                            .map(missing -> OreGet.getOre().getRateLimiter().enqueue(() -> OreGet.getOre().getProject(missing)))
+                            .map(missing -> SharedInstances.getOre().getRateLimiter().enqueue(() -> SharedInstances.getOre().getProject(missing)))
                             .collect(Collectors.toSet()))
                     .stream()
                             .filter(Optional::isPresent)
@@ -64,7 +65,7 @@ public class InstallJob extends PluginJob {
                             pluginsOnOre.add(project.getPluginId());
                             if (project.isInstalled()) {
                                 //requires update?
-                                ProjectContainer installedData = OreGet.getPluginCache().findProject(project.getPluginId()).get();
+                                ProjectContainer installedData = PluginCache.get().findProject(project.getPluginId()).get();
                                 boolean canUpdate = false;
                                 String localVersion = installedData.getCachedVersion().isPresent() ? installedData.getCachedVersion().get() :
                                         ( installedData.getInstalledVersion().isPresent() ? installedData.getInstalledVersion().get() :
@@ -119,7 +120,7 @@ public class InstallJob extends PluginJob {
             setProgress( (float)(resolveResult.toDownload.size()) / (pluginsToCheck.size()+resolveResult.toDownload.size()) );
         }
         setProgress(1f);
-        JobManager.get().println(Text.of("Resolving dependencies... ["+(resolveResult.toDownload.size())+"/"+(resolveResult.toDownload.size())+"]"));
+        JobManager.get().println("Resolving dependencies... ["+(resolveResult.toDownload.size())+"/"+(resolveResult.toDownload.size())+"]");
 
         return resolveResult;
     }

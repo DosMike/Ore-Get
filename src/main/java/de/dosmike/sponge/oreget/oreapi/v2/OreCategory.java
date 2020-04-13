@@ -1,5 +1,7 @@
 package de.dosmike.sponge.oreget.oreapi.v2;
 
+import java.io.Serializable;
+
 public enum OreCategory {
 
     ADMIN_TOOLS,

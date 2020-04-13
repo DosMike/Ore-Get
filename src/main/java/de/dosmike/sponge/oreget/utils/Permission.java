@@ -1,6 +1,6 @@
 package de.dosmike.sponge.oreget.utils;
 
-import de.dosmike.sponge.oreget.OreGet;
+import de.dosmike.sponge.oreget.multiplatform.sponge.OreGetPlugin;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.command.CommandException;
@@ -33,7 +33,7 @@ public class Permission {
         this.description = description;
         this.group = group;
 
-        OreGet.describePermission().ifPresent(perm -> {
+        OreGetPlugin.describePermission().ifPresent(perm -> {
             perm.id(id);
             perm.description(description);
             if (group != null) perm.assign(group, true); else perm.assign(PermissionDescription.ROLE_USER, true);

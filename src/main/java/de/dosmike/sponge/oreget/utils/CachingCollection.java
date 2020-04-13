@@ -3,11 +3,12 @@ package de.dosmike.sponge.oreget.utils;
 import com.itwookie.utils.Expiring;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class CachingCollection<E> implements Collection<E> {
+public class CachingCollection<E> implements Collection<E>, Serializable {
 
     private Collection<Expiring<E>> container;
     private long lifespan;

@@ -1,4 +1,4 @@
-package de.dosmike.sponge.oreget;
+package de.dosmike.sponge.oreget.multiplatform.sponge;
 
 import de.dosmike.sponge.oreget.utils.Permission;
 import org.spongepowered.api.service.permission.PermissionDescription;

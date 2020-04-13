@@ -2,7 +2,9 @@ package de.dosmike.sponge.oreget.oreapi.v2;
 
 import com.google.gson.JsonObject;
 
-public class OrePagination {
+import java.io.Serializable;
+
+public class OrePagination implements Serializable {
 
     int limit;
     int offset;

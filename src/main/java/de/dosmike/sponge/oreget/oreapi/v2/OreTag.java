@@ -4,8 +4,9 @@ import com.google.gson.JsonObject;
 import de.dosmike.sponge.oreget.utils.JsonUtil;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class OreTag {
+public class OreTag implements Serializable {
 
     String name;
     String data;
