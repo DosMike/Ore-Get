@@ -100,6 +100,26 @@ task rebuild(group:'_Plugin') {
     mustRunAfter clean
     finalizedBy uberJar
 }
+task zPublish(type: Exec, group:'_Plugin', dependsOn:uberJar) {
+    def keyfile = file('..\\PluginPublisher\\.apikeys')
+    if (keyfile.exists()) {
+        keyfile.readLines().each() {
+            def (key, value) = it.tokenize('=')
+            environment key, value
+        }
+        def spp_git_slug = 'DosMike/Ore-Get'
+        def spp_discord_server = '342942444288999435'
+        def spp_discord_channel = '657333870772879420'
+        def spp_discord_mention = '<@&657334086146195487>'
+        def spp_discord_header = "${spp_discord_mention} Version ${version} released on Ore and GitHub"
+        def outputFile = "build\\libs\\${jar.archiveName}"
+        commandLine 'java', '-jar', '..\\PluginPublisher\\PluginPublisher.jar',
+                '--gk', 'gitkey', '--ok', 'orekey', '--dk', 'discordkey',
+                '--gs', spp_git_slug, '--gt', version, '--gn', "Release Build ${version}", '--ga', outputFile,
+                '--op', pluginid, '--oa', outputFile,
+                '--ds', spp_discord_server, '--dc', spp_discord_channel, '--dh', spp_discord_header
+    }
+}
 
 //for generating the jar
 jar {
