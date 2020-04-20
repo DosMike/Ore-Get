@@ -92,4 +92,12 @@ public class PlatformProbe {
         return PATH_ROOT = path;
     }
 
+    /**
+     * Determines whether the post-script will be executed automatically after
+     * running a command. This is only used for standalone runs. For plugin runs
+     * the watch-dog is responsible for executing the post script.
+     * This value is supposed to be poked in main() when parsing args
+     */
+    public static boolean FLAG_DRYRUN = false;
+
 }

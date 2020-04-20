@@ -6,6 +6,7 @@ import de.dosmike.sponge.oreget.multiplatform.JobManager;
 import de.dosmike.sponge.oreget.multiplatform.Logging;
 import de.dosmike.sponge.oreget.multiplatform.PlatformProbe;
 import de.dosmike.sponge.oreget.multiplatform.SharedInstances;
+import de.dosmike.sponge.oreget.utils.ExitHandler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,7 +40,12 @@ public class TerminalArgsParser {
         } catch (IOException|ClassNotFoundException e) {
             /*ignore*/
         }
+        if (hasFlag("--dry-run", args, 0)) {
+            args = withoutFlag("--dry-run", args, 0);
+            PlatformProbe.FLAG_DRYRUN = true;
+        }
         PluginCache.get().scanLoaded();
+        ExitHandler.attach();
         int exitCode = 0;
         Future<?> busyWait = null;
         try {
@@ -171,6 +177,12 @@ public class TerminalArgsParser {
     private static boolean hasFlag(String flag, String[] args, int first) {
         for (int i=first;i<args.length;i++) if (args[i].equalsIgnoreCase(flag)) return true; return false;
     }
+    /** Removed a single flag from args, if present. Additionally shifts arguments by first = 0 */
+    private static String[] withoutFlag(String flag, String[] args, int first) {
+        List<String> temporary = new LinkedList<>(Arrays.asList(Arrays.copyOfRange(args, first, args.length)));
+        temporary.removeIf(element->element.startsWith("-") && element.equalsIgnoreCase(flag));
+        return temporary.toArray(new String[0]);
+    }
     /** Note: this will reset the index to first = 0 */
     private static String[] withoutFlags(String[] args, int first) {
         List<String> temporary = new LinkedList<>(Arrays.asList(Arrays.copyOfRange(args, first, args.length)));
@@ -210,6 +222,8 @@ public class TerminalArgsParser {
         Logging.log(null, "                       This means that autoremove can delete this plugin.");
         Logging.log(null, "   ",Logging.Color.DARK_GREEN,"unmark ",Logging.Color.DARK_PURPLE,"plugin ids",Logging.Color.RESET,"   Marks all ",Logging.Color.DARK_PURPLE,"plugins",Logging.Color.RESET," as manually installed.");
         Logging.log(null, "                       Autoremove is not allowed to touch these.");
+        Logging.log(null, "You can use the global flag ",Logging.Color.GOLD,"--dry-run",Logging.Color.RESET," to prevent the post-script from running");
+        Logging.log(null, "in case you want to see what updates would be available.");
     }
 
 }
